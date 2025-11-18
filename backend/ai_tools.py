@@ -15,7 +15,7 @@ SDK Implementation Notes (2025):
 - Uses Anthropic SDK v0.73.0+ with Messages API
 - Tool definitions use "input_schema" (not "parameters")
 - Tool results support simple string content (wrapping optional)
-- Supports parallel tool execution (disable_parallel_tool_use parameter)
+- Supports parallel tool execution (via tool_choice.disable_parallel_tool_use)
 - Error handling via "is_error" flag in tool results
 - Multi-turn conversation with proper message history management
 """
@@ -284,9 +284,14 @@ def chat_with_claude(message: str, conversation_history: Optional[List[Dict[str,
             max_tokens=1024,
             tools=TOOLS,
             messages=messages,
-            # Parallel tool use allows Claude to call multiple tools simultaneously
-            # Set to True to disable parallel execution (educational: force sequential)
-            # disable_parallel_tool_use=False  # Default: False (parallel enabled)
+            tool_choice={
+                "type": "auto",  # Claude decides which tools to use
+                "disable_parallel_tool_use": False,  # False = parallel enabled (default)
+            },
+            # Other tool_choice options:
+            # {"type": "any"}  # Force Claude to use at least one tool
+            # {"type": "tool", "name": "get_user"}  # Force specific tool
+            # {"type": "none"}  # Prevent tool use
         )
 
         # Step 2: Check if Claude wants to use tools
@@ -338,8 +343,11 @@ def chat_with_claude(message: str, conversation_history: Optional[List[Dict[str,
                 model="claude-haiku-4-5-20251001",  # Claude 4.5 Haiku
                 max_tokens=1024,
                 tools=TOOLS,
-                messages=messages
-                # disable_parallel_tool_use=False  # Default: False (parallel enabled)
+                messages=messages,
+                tool_choice={
+                    "type": "auto",
+                    "disable_parallel_tool_use": False,
+                },
             )
 
         # Step 4: Extract final text response
