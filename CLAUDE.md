@@ -207,3 +207,65 @@ See `specs/001-blackbird-refactor/plan.md` for complete technical details.
 - FastAPI (web framework)
 - SQLite 3.x (embedded database)
 - Anthropic Claude API (AI function calling)
+
+## Architecture Overview
+
+### 6-Layer Architecture Pattern
+
+The application uses strict layer separation (from README.md architectural decisions):
+
+1. **Presentation Layer** (React) → User interface
+2. **API Gateway Layer** (Vite Proxy) → Development routing, CORS
+3. **API Layer** (FastAPI) → REST endpoints, validation
+4. **Business Logic Layer** (Route Handlers) → Orchestration, error handling
+5. **Integration Layer** (AI Tools) → Claude communication, tool execution
+6. **Data Access Layer** (Database Module) → CRUD operations
+7. **Data Storage Layer** (SQLite) → Persistent storage
+
+**Critical Design Patterns:**
+- **Context Manager Pattern**: Database connections use `get_db()` context manager for automatic lifecycle management
+- **Function Calling Pattern**: Claude AI tools defined with JSON schemas in `ai_tools.py`
+- **Repository Pattern**: Database operations abstracted from business logic
+- **Stateless API**: No server-side session state (educational simplification)
+
+### Key Implementation Details
+
+**Database (`backend/database.py`):**
+- Uses `get_db()` context manager for all connections
+- All queries are parameterized (SQL injection prevention)
+- Schema: 2 tables (customers, orders) with foreign keys
+- No conversation history storage (intentional educational simplification)
+
+**AI Integration (`backend/ai_tools.py`):**
+- 6 Claude AI function calling tools (primary learning objective)
+- Tool executor routes tool calls to database operations
+- Model: `claude-haiku-4-5-20251001` (Claude 3.5 Haiku)
+- Max tokens: 1024 per response
+- Stateless conversations (no history between requests)
+
+**API Layer (`backend/main.py`):**
+- All endpoints under `/api` prefix
+- Pydantic models for request/response validation
+- CORS enabled for `localhost:5173` and `localhost:3000`
+- FastAPI auto-generates OpenAPI docs at `/docs`
+
+**Frontend (`frontend/src/`):**
+- React Router for navigation between 3 pages (Chat, Customers, Orders)
+- `api.js` centralizes all backend communication
+- Vite proxy routes `/api/*` to `http://localhost:8000/api/*`
+
+## Data Migration
+
+The `migrate_data.py` script loads initial data from HuggingFace datasets:
+- `dwb2023/blackbird-customers` → customers table
+- `dwb2023/blackbird-orders` → orders table
+
+Run ONLY ONCE during initial setup: `python backend/migrate_data.py`
+
+## Common Pitfalls
+
+1. **Missing ANTHROPIC_API_KEY**: App will fail at startup if not set in `.env`
+2. **Database not initialized**: Run `python -c "from database import init_database; init_database()"` from `backend/` directory
+3. **Wrong working directory**: Backend commands must run from `backend/` directory, frontend from `frontend/`
+4. **CORS errors**: Ensure frontend runs on `localhost:5173` (default Vite port) or update CORS config in `backend/main.py:44-54`
+5. **TDD violations**: MUST write tests before implementation per constitutional principle #3
