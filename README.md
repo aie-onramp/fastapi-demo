@@ -19,7 +19,7 @@ The **Blackbird Customer Support Application** is a full-stack demonstration of 
 
 **Technology Stack:**
 - **Backend:** FastAPI (Python), SQLite, Pydantic validation
-- **AI Integration:** Claude 3.5 Haiku (Anthropic API)
+- **AI Integration:** Claude 4.5 Haiku (Anthropic API)
 - **Frontend:** React 18, Vite, JavaScript
 - **Architecture Style:** Layered architecture with RESTful APIs
 
@@ -910,7 +910,7 @@ CREATE INDEX idx_orders_status ON orders(status);
 
 ### Claude AI Tool System
 
-The application integrates Claude 3.5 Haiku using Anthropic's tool calling (function calling) API. This enables Claude to autonomously interact with the database through structured tools.
+The application integrates Claude 4.5 Haiku using Anthropic's tool calling (function calling) API. This enables Claude to autonomously interact with the database through structured tools.
 
 **Integration Approach:**
 - **6 Custom Tools:** Defined using JSON Schema format
@@ -1089,7 +1089,7 @@ app.add_middleware(
 **Current Configuration:**
 ```python
 response = client.messages.create(
-    model="claude-haiku-4-5-20251001",  # Claude 3.5 Haiku
+    model="claude-haiku-4-5-20251001",  # Claude 4.5 Haiku
     max_tokens=1024,                     # Response length limit
     tools=TOOLS,                         # 6 available tools
     messages=messages                    # Conversation history
@@ -1894,7 +1894,7 @@ async def cancel_order(order_id: str, background_tasks: BackgroundTasks):
 | **python-dotenv** | 1.0.0 | Environment variable management | https://pypi.org/project/python-dotenv/ |
 
 **AI Integration:**
-- **Model:** Claude 3.5 Haiku (`claude-haiku-4-5-20251001`)
+- **Model:** Claude 4.5 Haiku (`claude-haiku-4-5-20251001`)
 - **API:** Anthropic Messages API with tool calling
 - **Max Tokens:** 1024 per response
 - **Tools:** 6 custom tools for database interaction

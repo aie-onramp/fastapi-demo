@@ -183,7 +183,7 @@ async def chat_with_claude(message, conversation_history):
 
     # Send to Claude with tools
     response = client.messages.create(
-        model="claude-3-5-sonnet-20241022",
+        model="claude-haiku-4-5-20251001",  # Claude 4.5 Haiku
         max_tokens=1024,
         tools=TOOLS,
         messages=conversation_history + [{"role": "user", "content": message}]
@@ -203,7 +203,7 @@ async def chat_with_claude(message, conversation_history):
 
         # Send tool results back to Claude
         response = client.messages.create(
-            model="claude-3-5-sonnet-20241022",
+            model="claude-haiku-4-5-20251001",  # Claude 4.5 Haiku
             max_tokens=1024,
             tools=TOOLS,
             messages=conversation_history + [

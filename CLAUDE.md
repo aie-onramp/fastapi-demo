@@ -282,7 +282,7 @@ The application uses strict layer separation (from README.md architectural decis
 **AI Integration (`backend/ai_tools.py`):**
 - 6 Claude AI function calling tools (primary learning objective)
 - Tool executor routes tool calls to database operations
-- Model: `claude-haiku-4-5-20251001` (Claude 3.5 Haiku)
+- Model: `claude-haiku-4-5-20251001` (Claude 4.5 Haiku)
 - Max tokens: 1024 per response
 - Stateless conversations (no history between requests)
 
