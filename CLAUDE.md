@@ -4,7 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a Python 3.11 FastAPI demonstration project that uses the **SpecKit feature development framework** for structured, test-driven development. The project is currently in greenfield state with no application code yet implemented.
+This is a Python 3.11 FastAPI demonstration project for the AI Engineering Onramp course. Uses the **SpecKit feature development framework** for structured, test-driven development.
+
+**Current Status**: Specification and planning phase for feature 001-blackbird-refactor (React + FastAPI + SQLite customer support app with Claude AI integration).
+
+**Core Educational Objective**: Teaching Claude AI function calling integration with modern web development (React frontend + FastAPI backend).
 
 ## SpecKit Workflow (MANDATORY)
 
@@ -56,10 +60,47 @@ All feature development MUST follow the SpecKit phase-based workflow:
 .specify/scripts/bash/check-prerequisites.sh
 ```
 
-### Python Environment
-- Python version: 3.11 (specified in `.python-version`)
-- Package manager: Standard Python tooling (pyproject.toml)
-- Dependencies: Not yet defined
+### Python Development
+```bash
+# Ensure Python 3.11 is active (check .python-version)
+python --version
+
+# Backend setup (when backend/ exists)
+cd backend
+python -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+
+# Run FastAPI development server
+uvicorn main:app --reload
+
+# Run tests
+pytest tests/ -v
+pytest tests/test_api.py -v  # Run specific test file
+pytest tests/test_api.py::test_function_name -v  # Run single test
+
+# Data migration (HuggingFace → SQLite)
+python migrate_data.py
+```
+
+### Frontend Development
+```bash
+# Frontend setup (when frontend/ exists)
+cd frontend
+npm install
+
+# Run Vite development server
+npm run dev
+
+# Build for production
+npm run build
+```
+
+### Environment Variables
+```bash
+# Required for Claude AI integration
+export ANTHROPIC_API_KEY="your-key-here"
+```
 
 ## Architecture Principles (Constitutional)
 
@@ -109,7 +150,9 @@ All feature development MUST follow the SpecKit phase-based workflow:
 
 The project constitution (`.specify/memory/constitution.md`) defines core principles, constraints, and governance rules that take **precedence over all other practices**.
 
-Key governance principles:
+**Note**: Constitution file is currently a template. Use `/speckit.constitution` to create or update it based on project principles.
+
+Key governance principles enforced by SpecKit:
 - Test-first development is mandatory
 - All requirements must be measurable and testable
 - Success criteria must be unambiguous
@@ -124,19 +167,43 @@ The following MCP servers are configured for documentation access:
 - **ai-docs-server**: MCP, FastMCP, LangChain, LangGraph, Anthropic docs
 - **ai-docs-server-full**: Full versions of above documentation
 
+## Current Feature: 001-blackbird-refactor
+
+**Goal**: Refactor Gradio + HuggingFace customer support app → React + FastAPI + SQLite
+
+**Architecture** (per `specs/001-blackbird-refactor/plan.md`):
+- **Backend**: 4 files (~800 LOC) - `main.py` (FastAPI routes), `models.py` (Pydantic schemas), `ai_tools.py` (Claude AI + 6 function calling tools), `database.py` (SQLite queries), `migrate_data.py` (HF → SQLite)
+- **Frontend**: 8 files (~600 LOC) - React 18 + Vite, 3 pages (Chat, Customers, Orders), reusable components
+- **Database**: SQLite with 2 tables (customers, orders) - NO conversation history storage (educational simplification)
+
+**Key Endpoints**:
+- `POST /api/chat` - Claude AI integration with function calling
+- `GET/PATCH /api/customers/*` - Customer CRUD
+- `GET/PATCH /api/orders/*` - Order management
+
+**6 Claude AI Tools** (primary learning objective):
+1. `get_user` - Search by email/phone/username
+2. `get_order_by_id` - Order lookup
+3. `get_customer_orders` - Customer's order history
+4. `cancel_order` - Cancel if Processing
+5. `update_user_contact` - Update email/phone
+6. `get_user_info` - Customer + orders combined
+
+See `specs/001-blackbird-refactor/plan.md` for complete technical details.
+
 ## Important Notes for Claude Code
 
-1. **This is a greenfield project** - No FastAPI application code exists yet
+1. **Educational focus** - This is a teaching application for AI Engineering Onramp, not production code
 2. **SpecKit workflow is mandatory** - Never bypass the specify → plan → tasks → implement workflow
 3. **TDD is non-negotiable** - Tests must exist and pass before implementation
-4. **Constitution is authority** - Project constitution overrides all other practices
+4. **Simplicity over architecture** - Removed layered architecture, logging, monitoring to focus on AI integration
 5. **Feature isolation** - Each feature gets a numbered branch and isolated spec directory
 6. **Technology-agnostic specs** - Keep implementation details in plan.md, not spec.md
 7. **Measurable requirements** - All success criteria must be testable
 
 ## Active Technologies
-- Python 3.11 (backend), TypeScript/JavaScript (frontend with React) (001-blackbird-refactor)
-- SQLite 3.x (embedded database with WAL mode for concurrency) (001-blackbird-refactor)
-
-## Recent Changes
-- 001-blackbird-refactor: Added Python 3.11 (backend), TypeScript/JavaScript (frontend with React)
+- Python 3.11 (backend)
+- JavaScript/React 18 (frontend with Vite)
+- FastAPI (web framework)
+- SQLite 3.x (embedded database)
+- Anthropic Claude API (AI function calling)
