@@ -1,0 +1,224 @@
+# Implementation Plan: Blackbird Customer Support Application Refactor
+
+**Branch**: `001-blackbird-refactor` | **Date**: 2025-11-17 | **Spec**: [spec.md](./spec.md)
+**Input**: Feature specification from `/specs/001-blackbird-refactor/spec.md`
+
+**Note**: This template is filled in by the `/speckit.plan` command. See `.specify/templates/commands/plan.md` for the execution workflow.
+
+## Summary
+
+Refactor the Blackbird customer support application from a HuggingFace Spaces deployment (Gradio frontend + FastAPI backend with HuggingFace dataset storage) to a modern web application with React frontend, FastAPI backend, and SQLite database. The system provides AI-powered customer support using Claude 3.5 Sonnet with function calling to manage customer accounts and orders. The refactoring preserves all existing functionality while modernizing the architecture for better maintainability, performance, and user experience.
+
+**Core Capabilities:**
+- AI-powered conversational interface for customer support agents
+- Customer account management (search, view, update contact information)
+- Order management (view, search, cancel processing orders)
+- Data migration from HuggingFace datasets to SQLite
+- Conversation history tracking and audit trails
+
+## Technical Context
+
+**Educational Context**: This is a teaching application for the AI Engineering Onramp course. Focus is on learning AI-assisted development, LLM APIs, and basic web application structure - not production-grade architecture.
+
+**Language/Version**: Python 3.11 (backend), JavaScript with React (frontend)
+**Primary Dependencies**:
+- Backend: FastAPI, Anthropic SDK (Claude API), Pydantic, uvicorn
+- Frontend: React 18, Vite (build tool), basic fetch for API calls
+**Storage**: SQLite 3.x (basic configuration, no advanced features)
+**Testing**: Basic API contract tests with pytest (manual UI testing)
+**Target Platform**: Local development environment, modern browsers
+**Project Type**: Simple web application (backend + frontend)
+**Scale/Scope**:
+- 10 customers, 13 orders (test data only)
+- 3 user stories (remove conversation history - P3)
+- 16 functional requirements (remove conversation storage)
+- ~800-1,000 LOC backend, ~600-800 LOC frontend
+
+## Educational Goals & Simplifications
+
+**Primary Learning Objectives:**
+1. **AI Integration** - Claude API with function calling (6 tools) - THE CORE FOCUS
+2. **Backend Development** - FastAPI basics, routes, request/response handling
+3. **Frontend Development** - React components, state management, API integration
+4. **Data Migration** - Practical example moving from HuggingFace datasets to SQLite
+
+**Simplifications for Educational Value:**
+- **No layered architecture** - Flat structure for easy navigation (3-4 backend files)
+- **No production features** - Removed: conversation history, audit trails, advanced logging
+- **No performance optimization** - Removed: WAL mode, connection pooling, SLA requirements
+- **Minimal testing** - Basic API tests only, manual UI testing (not TDD)
+- **Simple frontend** - Basic React without enterprise patterns (no TanStack Query, custom hooks)
+
+**Alignment with AI Engineering Onramp Course:**
+- Session 1: LLM APIs (Claude function calling)
+- Session 2: Frontend UI (React basics)
+- Session 3: Backend development (FastAPI)
+- Session 4: End-to-end integration
+
+## Constitution Check
+
+**Status**: ✅ Educational prototype - constitution principles adapted for learning context
+
+**Adapted Principles:**
+- ❌ **Library-First**: Web app required for course curriculum (frontend + backend learning)
+- ❌ **CLI Interface**: REST API + React UI for modern web development learning
+- ⚠️ **Test-First**: Basic testing encouraged, not mandated (students learning, not TDD practitioners)
+- ✅ **Clarity**: Simple, flat structure prioritizes understanding over enterprise patterns
+- ✅ **Educational Value**: Every component teaches a specific course concept
+
+**Recommendation**: Update constitution to clarify applicability of library-first principle to web applications, or document this feature as an exception with justification.
+
+## Project Structure
+
+### Documentation (this feature)
+
+```text
+specs/[###-feature]/
+├── plan.md              # This file (/speckit.plan command output)
+├── research.md          # Phase 0 output (/speckit.plan command)
+├── data-model.md        # Phase 1 output (/speckit.plan command)
+├── quickstart.md        # Phase 1 output (/speckit.plan command)
+├── contracts/           # Phase 1 output (/speckit.plan command)
+└── tasks.md             # Phase 2 output (/speckit.tasks command - NOT created by /speckit.plan)
+```
+
+### Source Code (repository root)
+
+```text
+backend/                           # FastAPI backend service
+├── src/
+│   ├── models/                   # SQLAlchemy ORM models
+│   │   ├── __init__.py
+│   │   ├── customer.py           # Customer model
+│   │   ├── order.py              # Order model
+│   │   ├── conversation.py       # Conversation model
+│   │   └── message.py            # Message model
+│   ├── schemas/                  # Pydantic schemas for API validation
+│   │   ├── __init__.py
+│   │   ├── customer.py
+│   │   ├── order.py
+│   │   └── conversation.py
+│   ├── api/                      # API endpoints
+│   │   ├── __init__.py
+│   │   ├── customers.py          # Customer CRUD endpoints
+│   │   ├── orders.py             # Order CRUD endpoints
+│   │   ├── chat.py               # AI chat endpoint
+│   │   └── conversations.py      # Conversation history endpoints
+│   ├── services/                 # Business logic layer
+│   │   ├── __init__.py
+│   │   ├── customer_service.py
+│   │   ├── order_service.py
+│   │   ├── chat_service.py       # Claude AI integration
+│   │   └── tool_handler.py       # AI function calling tools
+│   ├── database/                 # Database configuration
+│   │   ├── __init__.py
+│   │   ├── session.py            # SQLAlchemy session management
+│   │   └── migrations/           # Database migration scripts
+│   │       ├── init_schema.py
+│   │       └── migrate_from_hf.py
+│   ├── config.py                 # Application configuration
+│   ├── main.py                   # FastAPI application entry point
+│   └── __init__.py
+├── tests/
+│   ├── contract/                 # API contract tests
+│   │   ├── test_customer_api.py
+│   │   ├── test_order_api.py
+│   │   └── test_chat_api.py
+│   ├── integration/              # Integration tests
+│   │   ├── test_database.py
+│   │   ├── test_ai_tools.py
+│   │   └── test_data_migration.py
+│   ├── unit/                     # Unit tests
+│   │   ├── test_models.py
+│   │   ├── test_services.py
+│   │   └── test_schemas.py
+│   └── conftest.py               # Pytest fixtures
+├── requirements.txt              # Python dependencies
+├── pyproject.toml                # Python project configuration
+└── README.md
+
+frontend/                          # React frontend application
+├── src/
+│   ├── components/               # Reusable React components
+│   │   ├── chat/
+│   │   │   ├── ChatInterface.tsx
+│   │   │   ├── MessageList.tsx
+│   │   │   └── MessageInput.tsx
+│   │   ├── customers/
+│   │   │   ├── CustomerList.tsx
+│   │   │   ├── CustomerDetail.tsx
+│   │   │   └── CustomerSearch.tsx
+│   │   ├── orders/
+│   │   │   ├── OrderList.tsx
+│   │   │   ├── OrderDetail.tsx
+│   │   │   └── OrderSearch.tsx
+│   │   ├── common/
+│   │   │   ├── Layout.tsx
+│   │   │   ├── Table.tsx
+│   │   │   └── ErrorBoundary.tsx
+│   │   └── index.ts
+│   ├── pages/                    # Page-level components
+│   │   ├── ChatPage.tsx
+│   │   ├── CustomersPage.tsx
+│   │   ├── OrdersPage.tsx
+│   │   └── ConversationsPage.tsx
+│   ├── services/                 # API client services
+│   │   ├── api.ts                # Base API client
+│   │   ├── customers.ts          # Customer API calls
+│   │   ├── orders.ts             # Order API calls
+│   │   └── chat.ts               # Chat API calls
+│   ├── hooks/                    # Custom React hooks
+│   │   ├── useCustomers.ts
+│   │   ├── useOrders.ts
+│   │   └── useChat.ts
+│   ├── types/                    # TypeScript type definitions
+│   │   ├── customer.ts
+│   │   ├── order.ts
+│   │   └── chat.ts
+│   ├── App.tsx                   # Root component
+│   ├── main.tsx                  # Application entry point
+│   └── index.css                 # Global styles (Tailwind)
+├── tests/
+│   ├── unit/                     # Component unit tests
+│   │   ├── ChatInterface.test.tsx
+│   │   ├── CustomerList.test.tsx
+│   │   └── OrderList.test.tsx
+│   ├── integration/              # Integration tests
+│   │   └── api-integration.test.ts
+│   └── e2e/                      # End-to-end tests (Playwright)
+│       ├── chat-flow.spec.ts
+│       ├── customer-management.spec.ts
+│       └── order-management.spec.ts
+├── public/                       # Static assets
+├── index.html                    # HTML entry point
+├── package.json                  # Node dependencies
+├── tsconfig.json                 # TypeScript configuration
+├── vite.config.ts                # Vite build configuration
+├── tailwind.config.js            # Tailwind CSS configuration
+└── README.md
+
+database/                          # Database files (gitignored)
+└── blackbird.db                  # SQLite database file
+
+.env                              # Environment variables (gitignored)
+.env.example                      # Example environment file
+docker-compose.yml                # Docker setup for development
+README.md                         # Project root README
+```
+
+**Structure Decision**: Web application architecture (Option 2) selected based on functional requirements for React frontend (FR-009, FR-010, FR-011, FR-016, FR-020) and RESTful API backend (FR-003, FR-004). The structure separates concerns between frontend and backend while maintaining clear organization within each domain.
+
+**Key Architectural Decisions:**
+1. **Backend**: Layered architecture (API → Services → Models) for maintainability and testability
+2. **Frontend**: Component-based architecture with service layer for API integration
+3. **Database**: Embedded SQLite in separate directory, excluded from version control
+4. **Testing**: Comprehensive test coverage at unit, integration, contract, and E2E levels
+
+## Complexity Tracking
+
+> **Fill ONLY if Constitution Check has violations that must be justified**
+
+| Violation | Why Needed | Simpler Alternative Rejected Because |
+|-----------|------------|--------------------------------------|
+| Web architecture vs. Library-First | User stories P1, P2, P3 explicitly require web UI for support agents (FR-009: "React frontend MUST provide chat interface") | CLI-only approach cannot satisfy visual data tables (FR-010, FR-011), real-time chat UI (FR-016), or responsive design requirements (FR-020) |
+| Two separate projects (backend + frontend) | React frontend requires Node.js/npm ecosystem while backend uses Python; separate build/deployment pipelines needed | Monolithic approach would complicate dependency management, require complex build system, and hinder independent scaling/deployment |

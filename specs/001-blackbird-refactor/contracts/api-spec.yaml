@@ -1,0 +1,688 @@
+openapi: 3.1.0
+info:
+  title: Blackbird Customer Support API
+  description: RESTful API for AI-powered customer support application managing customers, orders, and chat conversations
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@blackbird.example.com
+
+servers:
+  - url: http://localhost:8000/api/v1
+    description: Local development server
+  - url: https://api.blackbird.example.com/v1
+    description: Production server
+
+tags:
+  - name: customers
+    description: Customer account management
+  - name: orders
+    description: Order management and tracking
+  - name: chat
+    description: AI-powered chat interface
+  - name: conversations
+    description: Conversation history and audit
+
+paths:
+  # Customer Endpoints
+  /customers:
+    get:
+      tags: [customers]
+      summary: List all customers
+      description: Retrieve paginated list of customers with optional search filtering
+      operationId: listCustomers
+      parameters:
+        - name: search
+          in: query
+          description: Search term for name, email, username
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: Maximum number of results
+          schema:
+            type: integer
+            default: 50
+            minimum: 1
+            maximum: 100
+        - name: offset
+          in: query
+          description: Number of results to skip
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Customer'
+                  total:
+                    type: integer
+                  limit:
+                    type: integer
+                  offset:
+                    type: integer
+
+    post:
+      tags: [customers]
+      summary: Create new customer
+      description: Create a new customer account
+      operationId: createCustomer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomerCreate'
+      responses:
+        '201':
+          description: Customer created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '409':
+          description: Customer with email or username already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /customers/{customerId}:
+    get:
+      tags: [customers]
+      summary: Get customer by ID
+      operationId: getCustomer
+      parameters:
+        - $ref: '#/components/parameters/customerId'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags: [customers]
+      summary: Update customer
+      description: Update customer contact information (email and/or phone)
+      operationId: updateCustomer
+      parameters:
+        - $ref: '#/components/parameters/customerId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomerUpdate'
+      responses:
+        '200':
+          description: Customer updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Email already in use by another customer
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /customers/search:
+    post:
+      tags: [customers]
+      summary: Search customers
+      description: Search customers by email, phone, or username (exact match)
+      operationId: searchCustomers
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                key:
+                  type: string
+                  enum: [email, phone, username]
+                  description: Field to search by
+                value:
+                  type: string
+                  description: Value to search for
+              required: [key, value]
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Customer'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+
+  # Order Endpoints
+  /orders:
+    get:
+      tags: [orders]
+      summary: List all orders
+      description: Retrieve paginated list of orders with optional status filtering
+      operationId: listOrders
+      parameters:
+        - name: customer_id
+          in: query
+          description: Filter by customer ID
+          schema:
+            type: string
+        - name: status
+          in: query
+          description: Filter by order status
+          schema:
+            type: string
+            enum: [Processing, Shipped, Delivered, Cancelled]
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+            minimum: 1
+            maximum: 100
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Order'
+                  total:
+                    type: integer
+                  limit:
+                    type: integer
+                  offset:
+                    type: integer
+
+  /orders/{orderId}:
+    get:
+      tags: [orders]
+      summary: Get order by ID
+      operationId: getOrder
+      parameters:
+        - $ref: '#/components/parameters/orderId'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /orders/{orderId}/cancel:
+    post:
+      tags: [orders]
+      summary: Cancel order
+      description: Cancel an order (only if status is Processing)
+      operationId: cancelOrder
+      parameters:
+        - $ref: '#/components/parameters/orderId'
+      responses:
+        '200':
+          description: Order cancelled successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        '400':
+          description: Order cannot be cancelled (already shipped/delivered/cancelled)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /customers/{customerId}/orders:
+    get:
+      tags: [orders]
+      summary: Get customer orders
+      description: Retrieve all orders for a specific customer
+      operationId: getCustomerOrders
+      parameters:
+        - $ref: '#/components/parameters/customerId'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Order'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # Chat Endpoints
+  /chat/message:
+    post:
+      tags: [chat]
+      summary: Send chat message
+      description: Send a message to the AI assistant and receive a response
+      operationId: sendChatMessage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatMessageRequest'
+      responses:
+        '200':
+          description: Successful response from AI
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatMessageResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '429':
+          description: Rate limit exceeded (Claude API)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Ruh roh Raggy! It's the dreaded rate limiting error from Hugging Face again!"
+        '500':
+          description: AI service error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # Conversation Endpoints
+  /conversations:
+    get:
+      tags: [conversations]
+      summary: List conversations
+      description: Retrieve conversation history with optional filtering
+      operationId: listConversations
+      parameters:
+        - name: customer_id
+          in: query
+          description: Filter by customer ID
+          schema:
+            type: string
+        - name: start_date
+          in: query
+          description: Filter conversations created after this date
+          schema:
+            type: string
+            format: date-time
+        - name: end_date
+          in: query
+          description: Filter conversations created before this date
+          schema:
+            type: string
+            format: date-time
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Conversation'
+                  total:
+                    type: integer
+                  limit:
+                    type: integer
+                  offset:
+                    type: integer
+
+  /conversations/{conversationId}:
+    get:
+      tags: [conversations]
+      summary: Get conversation by ID
+      description: Retrieve full conversation with all messages
+      operationId: getConversation
+      parameters:
+        - $ref: '#/components/parameters/conversationId'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationDetail'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  parameters:
+    customerId:
+      name: customerId
+      in: path
+      required: true
+      description: Customer unique identifier
+      schema:
+        type: string
+        pattern: '^\d{7}$'
+
+    orderId:
+      name: orderId
+      in: path
+      required: true
+      description: Order unique identifier
+      schema:
+        type: string
+        pattern: '^\d{5}$'
+
+    conversationId:
+      name: conversationId
+      in: path
+      required: true
+      description: Conversation unique identifier (UUID)
+      schema:
+        type: string
+        format: uuid
+
+  schemas:
+    Customer:
+      type: object
+      properties:
+        id:
+          type: string
+          pattern: '^\d{7}$'
+          example: "1213210"
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+          example: "John Doe"
+        email:
+          type: string
+          format: email
+          example: "john.doe@example.com"
+        phone:
+          type: string
+          pattern: '^\d{3}-\d{3}-\d{4}$'
+          example: "123-456-7890"
+        username:
+          type: string
+          minLength: 3
+          maxLength: 20
+          pattern: '^[a-zA-Z0-9_]+$'
+          example: "johndoe"
+      required: [id, name, email, phone, username]
+
+    CustomerCreate:
+      type: object
+      properties:
+        id:
+          type: string
+          pattern: '^\d{7}$'
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+          pattern: '^\d{3}-\d{3}-\d{4}$'
+        username:
+          type: string
+          minLength: 3
+          maxLength: 20
+          pattern: '^[a-zA-Z0-9_]+$'
+      required: [id, name, email, phone, username]
+
+    CustomerUpdate:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+          pattern: '^\d{3}-\d{3}-\d{4}$'
+      minProperties: 1
+
+    Order:
+      type: object
+      properties:
+        id:
+          type: string
+          pattern: '^\d{5}$'
+          example: "24601"
+        customer_id:
+          type: string
+          pattern: '^\d{7}$'
+          example: "1213210"
+        product:
+          type: string
+          minLength: 1
+          maxLength: 200
+          example: "Wireless Headphones"
+        quantity:
+          type: integer
+          minimum: 1
+          maximum: 999
+          example: 2
+        price:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 9999.99
+          example: 79.99
+        status:
+          type: string
+          enum: [Processing, Shipped, Delivered, Cancelled]
+          example: "Processing"
+      required: [id, customer_id, product, quantity, price, status]
+
+    ChatMessageRequest:
+      type: object
+      properties:
+        conversation_id:
+          type: string
+          format: uuid
+          description: Conversation ID (omit to start new conversation)
+        message:
+          type: string
+          minLength: 1
+          maxLength: 4000
+          description: User message content
+        customer_id:
+          type: string
+          pattern: '^\d{7}$'
+          description: Optional customer context
+      required: [message]
+
+    ChatMessageResponse:
+      type: object
+      properties:
+        conversation_id:
+          type: string
+          format: uuid
+        message:
+          type: string
+          description: AI assistant response
+        tool_calls:
+          type: array
+          items:
+            type: object
+          description: AI tool invocations (if any)
+        created_at:
+          type: string
+          format: date-time
+
+    Conversation:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        customer_id:
+          type: string
+          pattern: '^\d{7}$'
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        message_count:
+          type: integer
+          description: Number of messages in conversation
+      required: [id, created_at, updated_at]
+
+    ConversationDetail:
+      allOf:
+        - $ref: '#/components/schemas/Conversation'
+        - type: object
+          properties:
+            messages:
+              type: array
+              items:
+                $ref: '#/components/schemas/Message'
+
+    Message:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        conversation_id:
+          type: string
+          format: uuid
+        role:
+          type: string
+          enum: [user, assistant, system]
+        content:
+          type: string
+        tool_calls:
+          type: array
+          items:
+            type: object
+          nullable: true
+        tool_results:
+          type: array
+          items:
+            type: object
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+      required: [id, conversation_id, role, content, created_at]
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+        detail:
+          type: string
+          description: Detailed error information
+          nullable: true
+      required: [error]
+
+    ValidationError:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Validation failed"
+        detail:
+          type: array
+          items:
+            type: object
+            properties:
+              loc:
+                type: array
+                items:
+                  oneOf:
+                    - type: string
+                    - type: integer
+                description: Field location
+              msg:
+                type: string
+                description: Error message
+              type:
+                type: string
+                description: Error type
+
+  responses:
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "Resource not found"
+
+    ValidationError:
+      description: Validation error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ValidationError'
+
+  securitySchemes:
+    # Placeholder for future authentication
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: JWT token authentication (future implementation)
+
+# Security not enforced in Phase 1 (per spec assumptions)
+# security: []
