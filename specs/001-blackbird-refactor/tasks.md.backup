@@ -29,26 +29,26 @@
 **Goal**: Initialize project structure, dependencies, and environment
 
 **Tasks**:
-- [x] T001 Create backend directory structure (backend/, backend/tests/)
-- [x] T002 Create frontend directory structure (frontend/src/, frontend/src/pages/, frontend/src/components/)
-- [x] T003 [P] Create backend/requirements.txt with dependencies (fastapi, anthropic, pydantic, uvicorn, datasets, pytest)
-- [x] T004 [P] Create frontend/package.json with dependencies (react, react-router-dom, vite)
-- [x] T005 [P] Create .env.example with ANTHROPIC_API_KEY placeholder
-- [x] T006 [P] Create .gitignore for Python, Node, and SQLite files
-- [x] T007 [P] Create backend/README.md with setup instructions
-- [x] T008 [P] Create frontend/README.md with dev server instructions
+- [ ] T001 Create backend directory structure (backend/, backend/tests/)
+- [ ] T002 Create frontend directory structure (frontend/src/, frontend/src/pages/, frontend/src/components/)
+- [ ] T003 [P] Create backend/requirements.txt with dependencies (fastapi, anthropic, pydantic, uvicorn, datasets, pytest)
+- [ ] T004 [P] Create frontend/package.json with dependencies (react, react-router-dom, vite)
+- [ ] T005 [P] Create .env.example with ANTHROPIC_API_KEY placeholder
+- [ ] T006 [P] Create .gitignore for Python, Node, and SQLite files
+- [ ] T007 [P] Create backend/README.md with setup instructions
+- [ ] T008 [P] Create frontend/README.md with dev server instructions
 
 ## Phase 2: Foundational - Data Layer
 
 **Goal**: Set up database, migrations, and data models (blocking for all user stories)
 
 **Tasks**:
-- [x] T009 Implement SQLite schema creation in backend/database.py
-- [x] T010 Implement database connection function get_db() in backend/database.py
-- [x] T011 Implement data migration script backend/migrate_data.py (HuggingFace → SQLite)
-- [x] T012 Run migration to populate blackbird.db with 10 customers and 13 orders
-- [x] T013 [P] Define Pydantic models in backend/models.py (Customer, Order, ChatMessage, ChatResponse)
-- [x] T014 [P] Implement basic CRUD SQL functions in backend/database.py (get_customer, update_customer, get_order, etc.)
+- [ ] T009 Implement SQLite schema creation in backend/database.py
+- [ ] T010 Implement database connection function get_db() in backend/database.py
+- [ ] T011 Implement data migration script backend/migrate_data.py (HuggingFace → SQLite)
+- [ ] T012 Run migration to populate blackbird.db with 10 customers and 13 orders
+- [ ] T013 [P] Define Pydantic models in backend/models.py (Customer, Order, ChatMessage, ChatResponse)
+- [ ] T014 [P] Implement basic CRUD SQL functions in backend/database.py (get_customer, update_customer, get_order, etc.)
 
 **Validation**: Run `python backend/migrate_data.py` and verify blackbird.db contains 10 customers, 13 orders
 
@@ -61,21 +61,21 @@
 **Tasks**:
 
 ### Backend - Claude AI Integration
-- [x] T015 [US1] Define 6 Claude AI tool schemas in backend/ai_tools.py (get_user, get_order_by_id, get_customer_orders, cancel_order, update_user_contact, get_user_info)
-- [x] T016 [US1] Implement tool execution function execute_tool() in backend/ai_tools.py
-- [x] T017 [US1] Implement Claude API integration chat_with_claude() in backend/ai_tools.py
-- [x] T018 [US1] Create POST /api/chat endpoint in backend/main.py
+- [ ] T015 [US1] Define 6 Claude AI tool schemas in backend/ai_tools.py (get_user, get_order_by_id, get_customer_orders, cancel_order, update_user_contact, get_user_info)
+- [ ] T016 [US1] Implement tool execution function execute_tool() in backend/ai_tools.py
+- [ ] T017 [US1] Implement Claude API integration chat_with_claude() in backend/ai_tools.py
+- [ ] T018 [US1] Create POST /api/chat endpoint in backend/main.py
 
 ### Frontend - Chat UI
-- [x] T019 [P] [US1] Create ChatMessage component in frontend/src/components/ChatMessage.jsx
-- [x] T020 [US1] Implement ChatPage with message history and input in frontend/src/pages/ChatPage.jsx
-- [x] T021 [US1] Implement sendChatMessage() in frontend/src/api.js
+- [ ] T019 [P] [US1] Create ChatMessage component in frontend/src/components/ChatMessage.jsx
+- [ ] T020 [US1] Implement ChatPage with message history and input in frontend/src/pages/ChatPage.jsx
+- [ ] T021 [US1] Implement sendChatMessage() in frontend/src/api.js
 
 ### Integration
-- [x] T022 [US1] Create FastAPI app initialization in backend/main.py with CORS
-- [x] T023 [US1] Create React App component with routing in frontend/src/App.jsx
-- [x] T024 [US1] Create frontend/index.html entry point
-- [x] T025 [US1] Create frontend/vite.config.js with proxy to backend
+- [ ] T022 [US1] Create FastAPI app initialization in backend/main.py with CORS
+- [ ] T023 [US1] Create React App component with routing in frontend/src/App.jsx
+- [ ] T024 [US1] Create frontend/index.html entry point
+- [ ] T025 [US1] Create frontend/vite.config.js with proxy to backend
 
 **Manual Test Scenarios**:
 1. Start backend: `uvicorn backend.main:app --reload`
@@ -99,16 +99,16 @@
 **Tasks**:
 
 ### Backend - Customer API
-- [x] T026 [P] [US2] Create GET /api/customers endpoint in backend/main.py
-- [x] T027 [P] [US2] Create POST /api/customers/search endpoint in backend/main.py
-- [x] T028 [P] [US2] Create PATCH /api/customers/{id} endpoint in backend/main.py
-- [x] T029 [P] [US2] Create GET /api/customers/{id}/orders endpoint in backend/main.py
+- [ ] T026 [P] [US2] Create GET /api/customers endpoint in backend/main.py
+- [ ] T027 [P] [US2] Create POST /api/customers/search endpoint in backend/main.py
+- [ ] T028 [P] [US2] Create PATCH /api/customers/{id} endpoint in backend/main.py
+- [ ] T029 [P] [US2] Create GET /api/customers/{id}/orders endpoint in backend/main.py
 
 ### Frontend - Customer UI
-- [x] T030 [P] [US2] Create SearchBar component in frontend/src/components/SearchBar.jsx
-- [x] T031 [P] [US2] Create DataTable component in frontend/src/components/DataTable.jsx
-- [x] T032 [US2] Implement CustomersPage with search and table in frontend/src/pages/CustomersPage.jsx
-- [x] T033 [US2] Implement customer API functions in frontend/src/api.js (fetchCustomers, searchCustomers, updateCustomer)
+- [ ] T030 [P] [US2] Create SearchBar component in frontend/src/components/SearchBar.jsx
+- [ ] T031 [P] [US2] Create DataTable component in frontend/src/components/DataTable.jsx
+- [ ] T032 [US2] Implement CustomersPage with search and table in frontend/src/pages/CustomersPage.jsx
+- [ ] T033 [US2] Implement customer API functions in frontend/src/api.js (fetchCustomers, searchCustomers, updateCustomer)
 
 **Manual Test Scenarios**:
 1. Navigate to /customers
@@ -130,13 +130,13 @@
 **Tasks**:
 
 ### Backend - Order API
-- [x] T034 [P] [US3] Create GET /api/orders endpoint in backend/main.py with status filtering
-- [x] T035 [P] [US3] Create GET /api/orders/{id} endpoint in backend/main.py
-- [x] T036 [P] [US3] Create PATCH /api/orders/{id}/cancel endpoint in backend/main.py (with Processing status validation)
+- [ ] T034 [P] [US3] Create GET /api/orders endpoint in backend/main.py with status filtering
+- [ ] T035 [P] [US3] Create GET /api/orders/{id} endpoint in backend/main.py
+- [ ] T036 [P] [US3] Create PATCH /api/orders/{id}/cancel endpoint in backend/main.py (with Processing status validation)
 
 ### Frontend - Order UI
-- [x] T037 [US3] Implement OrdersPage with status filter and cancel button in frontend/src/pages/OrdersPage.jsx (reuse DataTable component)
-- [x] T038 [US3] Implement order API functions in frontend/src/api.js (fetchOrders, cancelOrder)
+- [ ] T037 [US3] Implement OrdersPage with status filter and cancel button in frontend/src/pages/OrdersPage.jsx (reuse DataTable component)
+- [ ] T038 [US3] Implement order API functions in frontend/src/api.js (fetchOrders, cancelOrder)
 
 **Manual Test Scenarios**:
 1. Navigate to /orders
