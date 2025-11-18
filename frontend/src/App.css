@@ -1,0 +1,46 @@
+.app {
+  min-height: 100vh;
+  background-color: #f5f5f5;
+}
+
+nav {
+  background-color: #333;
+  padding: 1rem;
+  margin-bottom: 0;
+}
+
+nav ul {
+  list-style: none;
+  display: flex;
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+nav li {
+  display: inline;
+}
+
+nav a {
+  color: white;
+  text-decoration: none;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+nav a:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+nav a.active {
+  background-color: #007bff;
+}
+
+nav .coming-soon span {
+  color: #999;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  cursor: not-allowed;
+}
