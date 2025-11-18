@@ -57,6 +57,9 @@ def migrate():
     inserted_customers = 0
     for customer in customers:
         try:
+            # Clean phone number (remove "updated_" prefix if present)
+            phone = customer['phone'].replace('updated_', '')
+
             cursor.execute(
                 """
                 INSERT INTO customers (id, name, email, phone, username)
@@ -66,7 +69,7 @@ def migrate():
                     customer['id'],
                     customer['name'],
                     customer['email'],
-                    customer['phone'],
+                    phone,
                     customer['username']
                 )
             )

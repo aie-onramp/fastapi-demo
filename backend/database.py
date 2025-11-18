@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS customers (
     username TEXT NOT NULL UNIQUE,
     CHECK (length(name) >= 1),
     CHECK (email LIKE '%@%.%'),
-    CHECK (phone LIKE '___-___-____'),
+    CHECK (length(phone) >= 10),
     CHECK (length(username) >= 3 AND length(username) <= 20)
 );
 
