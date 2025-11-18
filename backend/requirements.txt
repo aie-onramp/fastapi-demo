@@ -1,15 +1,16 @@
 # FastAPI and server
-fastapi==0.104.1
-uvicorn[standard]==0.24.0
+fastapi==0.115.0
+uvicorn[standard]==0.32.0
 python-multipart==0.0.6
 
 # AI/ML
-anthropic==0.7.8
-datasets==2.15.0
+anthropic==0.73.0
+datasets>=3.0.0  # Updated for compatibility with modern huggingface_hub
+huggingface-hub>=0.35.0  # Explicitly ensure modern version (HfFolder removed in 1.0+)
 
 # Data validation
-pydantic==2.5.0
-pydantic[email]==2.5.0
+pydantic==2.10.0
+pydantic[email]==2.10.0
 
 # Database
 # SQLite is built into Python, no package needed
@@ -18,9 +19,9 @@ pydantic[email]==2.5.0
 python-dotenv==1.0.0
 
 # Testing
-pytest==7.4.3
-pytest-asyncio==0.21.1
-httpx==0.25.2  # For testing FastAPI endpoints
+pytest==8.3.0
+pytest-asyncio==0.24.0
+httpx==0.28.0  # For testing FastAPI endpoints
 
 # Development tools (optional)
-ruff==0.1.6  # Linting and formatting
+ruff==0.8.0  # Linting and formatting

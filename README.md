@@ -50,16 +50,22 @@ This application follows a **layered architecture** pattern with strict separati
 # Navigate to project directory
 cd fastapi-demo
 
-# Install backend dependencies
-cd backend
-pip install -r requirements.txt
-
-# Set up environment variables
+# Set up environment variables (at project root)
 cp .env.example .env
 # Edit .env and add your ANTHROPIC_API_KEY
 
-# Initialize database
-python -c "from database import init_database; init_database()"
+# Backend setup
+cd backend
+
+# Create virtual environment (requires Python 3.11+)
+uv venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+
+# Install backend dependencies
+uv pip install -r requirements.txt
+
+# Initialize database with sample data
+python migrate_data.py
 
 # Run backend server
 uvicorn main:app --reload --port 8000
@@ -181,9 +187,8 @@ print(response.json()['response'])
 │       └── diagrams/
 │           └── 02_architecture_diagrams.md
 │
-├── pyproject.toml               # Project metadata
 ├── .env                         # Environment variables (not committed)
-└── main.py                      # Simple Hello World (7 lines)
+└── .env.example                 # Environment template
 ```
 
 **Structure Explanation:**
@@ -1120,22 +1125,21 @@ response = client.messages.create(
 # Navigate to project directory
 cd fastapi-demo
 
-# Create virtual environment (optional but recommended)
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install dependencies
-cd backend
-pip install -r requirements.txt
-
-# Set up environment variables
+# Set up environment variables (at project root)
 cp .env.example .env
 nano .env  # Add your ANTHROPIC_API_KEY
 
-# Initialize database
-python -c "from database import init_database; init_database()"
+# Navigate to backend directory
+cd backend
 
-# Optional: Load sample data
+# Create virtual environment
+uv venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+
+# Install dependencies
+uv pip install -r requirements.txt
+
+# Initialize database with sample data
 python migrate_data.py
 ```
 
@@ -2087,6 +2091,62 @@ This is an educational demonstration project. Refer to the project repository fo
    - FastAPI documentation: https://fastapi.tiangolo.com/
    - Anthropic documentation: https://docs.anthropic.com/
    - Pydantic documentation: https://docs.pydantic.dev/
+
+---
+
+## Common Troubleshooting
+
+### "Defaulting to user installation because normal site-packages is not writeable"
+
+**Symptoms**: When running `pip install`, packages install to `~/.local/lib/` instead of `.venv/`, then Python can't find the modules.
+
+**Root Cause**: Using regular `pip` instead of `uv pip` with uv-created virtual environments.
+
+**Solution**:
+```bash
+# Clean start
+cd backend
+rm -rf .venv
+
+# Create venv and install with uv pip
+uv venv
+source .venv/bin/activate  # Optional (uv auto-detects .venv)
+uv pip install -r requirements.txt
+```
+
+**Why**: `uv venv` doesn't install pip in the virtual environment by default. Always use `uv pip` for package management.
+
+### "ImportError: cannot import name 'HfFolder' from 'huggingface_hub'"
+
+**Symptoms**: `python migrate_data.py` fails with ImportError after installing datasets.
+
+**Root Cause**: Version incompatibility between `datasets` (old) and `huggingface_hub` (new). The `HfFolder` class was removed in `huggingface_hub` v1.0+.
+
+**Solution**:
+```bash
+# Ensure requirements.txt has updated versions
+cd backend
+rm -rf .venv
+uv venv
+uv pip install -r requirements.txt  # Will install datasets>=3.0.0
+python migrate_data.py
+```
+
+**Why**: Old `datasets==2.15.0` tried to import the deprecated `HfFolder` class. Modern `datasets>=3.0.0` is compatible with `huggingface_hub>=0.35.0`.
+
+### Virtual Environment Best Practices
+
+**Always use `uv pip` with uv-created environments:**
+```bash
+uv venv              # Create venv
+uv pip install ...   # Install packages
+uv pip list          # List packages
+```
+
+**NOT:**
+```bash
+pip install ...      # DON'T use regular pip with uv venv
+```
 
 ---
 

@@ -62,14 +62,14 @@ All feature development MUST follow the SpecKit phase-based workflow:
 
 ### Python Development
 ```bash
-# Ensure Python 3.11 is active (check .python-version)
+# Ensure Python 3.11 or higher is active
 python --version
 
 # Backend setup (when backend/ exists)
 cd backend
-python -m venv .venv
+uv venv
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-pip install -r requirements.txt
+uv pip install -r requirements.txt
 
 # Environment setup
 cp ../.env.example ../.env
@@ -307,8 +307,28 @@ Run ONLY ONCE during initial setup: `python backend/migrate_data.py`
 
 ## Common Pitfalls
 
-1. **Missing ANTHROPIC_API_KEY**: App will fail at startup if not set in `.env`
-2. **Database not initialized**: Run `python -c "from database import init_database; init_database()"` from `backend/` directory
-3. **Wrong working directory**: Backend commands must run from `backend/` directory, frontend from `frontend/`
-4. **CORS errors**: Ensure frontend runs on `localhost:5173` (default Vite port) or update CORS config in `backend/main.py:44-54`
-5. **TDD violations**: MUST write tests before implementation per constitutional principle #3
+1. **Using `pip` instead of `uv pip`**: With uv-created venvs, ALWAYS use `uv pip install`, not `pip install`. Regular pip will install to user site-packages instead of the venv.
+
+2. **Package version incompatibility**: Old `datasets==2.15.0` is incompatible with modern `huggingface_hub`. Ensure requirements.txt has `datasets>=3.0.0` and `huggingface_hub>=0.35.0`.
+
+3. **Missing ANTHROPIC_API_KEY**: App will fail at startup if not set in `.env` at project root.
+
+4. **Database not initialized**: Run `python migrate_data.py` from `backend/` directory to create and populate the database.
+
+5. **Wrong working directory**: Backend commands must run from `backend/` directory, frontend from `frontend/`.
+
+6. **CORS errors**: Ensure frontend runs on `localhost:5173` (default Vite port) or update CORS config in `backend/main.py:44-54`.
+
+7. **TDD violations**: MUST write tests before implementation per constitutional principle #3.
+
+## Troubleshooting
+
+### "Defaulting to user installation because normal site-packages is not writeable"
+- **Cause**: Using `pip install` instead of `uv pip install`
+- **Fix**: `cd backend && rm -rf .venv && uv venv && uv pip install -r requirements.txt`
+- **Prevention**: Always use `uv pip`, never `pip`, with uv-created environments
+
+### "ImportError: cannot import name 'HfFolder' from 'huggingface_hub'"
+- **Cause**: Version mismatch (old datasets + new huggingface_hub)
+- **Fix**: Update requirements.txt to `datasets>=3.0.0`, then recreate venv
+- **Why**: `HfFolder` was removed in huggingface_hub v1.0+

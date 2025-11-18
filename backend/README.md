@@ -6,7 +6,7 @@ FastAPI backend for the Blackbird Customer Support Application with Claude AI in
 
 ### Prerequisites
 
-- Python 3.11 (check `.python-version` in project root)
+- Python 3.11 or higher
 - Anthropic API key ([Get one here](https://console.anthropic.com/))
 
 ### Setup
@@ -14,25 +14,30 @@ FastAPI backend for the Blackbird Customer Support Application with Claude AI in
 1. **Create virtual environment**:
 ```bash
 cd backend
-python3.11 -m venv .venv
+uv venv
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 ```
 
 2. **Install dependencies**:
 ```bash
-pip install -r requirements.txt
+uv pip install -r requirements.txt
 ```
 
 3. **Configure environment**:
 ```bash
-# Copy example env file from project root
+# Note: .env should be at project root (one level up from backend/)
+# The backend/main.py loads environment variables from the parent directory
+# If .env doesn't exist, copy from template:
 cp ../.env.example ../.env
 
 # Edit .env and add your ANTHROPIC_API_KEY
+nano ../.env
 ```
 
 4. **Run database migration**:
 ```bash
+# Important: Run this from the backend/ directory
+# This creates backend/blackbird.db with sample data
 python migrate_data.py
 ```
 
@@ -43,6 +48,8 @@ Expected output:
 ✓ Migrated 13 orders
 ✓ Migration complete
 ```
+
+**Note:** The database file `blackbird.db` will be created in the `backend/` directory due to the relative path in `database.py`.
 
 5. **Start development server**:
 ```bash
@@ -104,7 +111,7 @@ pytest tests/test_api.py::test_chat_endpoint -v
 
 ## Claude AI Integration
 
-The backend integrates with Claude 3.5 Sonnet using 6 function calling tools:
+The backend integrates with Claude 4.5 Haiku using 6 function calling tools:
 
 1. **get_user** - Search customer by email/phone/username
 2. **get_order_by_id** - Lookup order details
@@ -138,6 +145,8 @@ SELECT * FROM customers;
 
 ## Development
 
+**Important:** All commands in this section assume you're in the `backend/` directory with your virtual environment activated.
+
 ### Running in development mode:
 ```bash
 # With auto-reload
@@ -161,21 +170,55 @@ ruff format .
 
 ## Troubleshooting
 
+### "Defaulting to user installation because normal site-packages is not writeable"
+
+**Cause**: Using `pip` instead of `uv pip` with uv-created virtual environments
+
+**Solution**:
+```bash
+# Use uv pip, not pip
+cd backend
+rm -rf .venv  # Clean start
+uv venv
+source .venv/bin/activate  # Optional (uv auto-detects .venv)
+uv pip install -r requirements.txt
+```
+
+**Why**: `uv venv` doesn't install pip in the virtual environment by default. Always use `uv pip` for package management with uv-created environments.
+
+### "ImportError: cannot import name 'HfFolder' from 'huggingface_hub'"
+
+**Cause**: Version mismatch between `datasets` and `huggingface_hub` packages
+
+**Solution**:
+```bash
+# Ensure you have updated requirements.txt
+cd backend
+rm -rf .venv
+uv venv
+uv pip install -r requirements.txt
+```
+
+**Why**: Old versions of `datasets` (2.15.0) tried to import `HfFolder` which was removed in `huggingface_hub` v1.0+. Updated `datasets>=3.0.0` is compatible with modern `huggingface_hub`.
+
 ### ModuleNotFoundError
 ```bash
-# Make sure virtual environment is activated
+# Make sure virtual environment is created and packages installed
+cd backend
+uv venv
 source .venv/bin/activate
-pip install -r requirements.txt
+uv pip install -r requirements.txt
 ```
 
 ### Database not found
 ```bash
-# Run migration script
+# Run migration script from backend/ directory
+cd backend
 python migrate_data.py
 ```
 
 ### Claude API errors
-- Check `ANTHROPIC_API_KEY` in `.env`
+- Check `ANTHROPIC_API_KEY` in `.env` (at project root)
 - Verify API key is valid at https://console.anthropic.com/
 - Check for rate limiting (429 errors)
 
