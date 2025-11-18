@@ -71,16 +71,25 @@ python -m venv .venv
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 
-# Run FastAPI development server
-uvicorn main:app --reload
+# Environment setup
+cp ../.env.example ../.env
+# Edit .env and add your ANTHROPIC_API_KEY from https://console.anthropic.com/
 
-# Run tests
+# Data migration (HuggingFace → SQLite) - run BEFORE starting server
+python migrate_data.py
+
+# Run FastAPI development server (from backend/ directory)
+uvicorn main:app --reload --port 8000
+
+# Run tests (when tests/test_api.py exists)
 pytest tests/ -v
 pytest tests/test_api.py -v  # Run specific test file
 pytest tests/test_api.py::test_function_name -v  # Run single test
+pytest --cov=. --cov-report=html  # Run with coverage
 
-# Data migration (HuggingFace → SQLite)
-python migrate_data.py
+# Linting and formatting (ruff is in requirements.txt)
+ruff check .  # Check code
+ruff format .  # Format code
 ```
 
 ### Frontend Development
@@ -89,17 +98,28 @@ python migrate_data.py
 cd frontend
 npm install
 
-# Run Vite development server
+# Run Vite development server (opens at http://localhost:5173)
 npm run dev
 
 # Build for production
 npm run build
+
+# Preview production build
+npm run preview
+
+# Linting
+npm run lint
 ```
 
 ### Environment Variables
 ```bash
-# Required for Claude AI integration
-export ANTHROPIC_API_KEY="your-key-here"
+# Copy template and configure
+cp .env.example .env
+
+# Required variables in .env:
+# ANTHROPIC_API_KEY=sk-ant-api03-your-key-here  # Get from https://console.anthropic.com/
+# DATABASE_URL=sqlite:///./blackbird.db
+# ENVIRONMENT=development
 ```
 
 ## Architecture Principles (Constitutional)
@@ -169,10 +189,25 @@ The following MCP servers are configured for documentation access:
 
 ## Current Feature: 001-blackbird-refactor
 
+**Branch**: `001-blackbird-refactor`
+
 **Goal**: Refactor Gradio + HuggingFace customer support app → React + FastAPI + SQLite
 
+**Current Status** (as of 2025-11-17):
+- ✅ Phase 1: Project setup complete (T001-T008)
+- ✅ Phase 2: Data layer complete (T009-T011) - database.py, models.py, migrate_data.py implemented
+- ⚠️ backend/main.py - NOT YET IMPLEMENTED (stub exists at project root)
+- ⚠️ backend/tests/ - Directory exists but no tests yet
+- ⚠️ frontend/ - Package.json exists but React components not implemented
+- 📋 See `specs/001-blackbird-refactor/tasks.md` for complete task list
+
 **Architecture** (per `specs/001-blackbird-refactor/plan.md`):
-- **Backend**: 4 files (~800 LOC) - `main.py` (FastAPI routes), `models.py` (Pydantic schemas), `ai_tools.py` (Claude AI + 6 function calling tools), `database.py` (SQLite queries), `migrate_data.py` (HF → SQLite)
+- **Backend**: 5 files (~800 LOC)
+  - `backend/main.py` - FastAPI routes (NOTE: stub exists at project root)
+  - `backend/models.py` - Pydantic schemas
+  - `backend/ai_tools.py` - Claude AI integration + 6 function calling tools
+  - `backend/database.py` - SQLite queries
+  - `backend/migrate_data.py` - HuggingFace → SQLite migration
 - **Frontend**: 8 files (~600 LOC) - React 18 + Vite, 3 pages (Chat, Customers, Orders), reusable components
 - **Database**: SQLite with 2 tables (customers, orders) - NO conversation history storage (educational simplification)
 
