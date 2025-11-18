@@ -26,8 +26,13 @@ from models import (
     ErrorResponse
 )
 
-# Load environment variables from .env
-load_dotenv()
+# Load environment variables from .env (look in parent directory)
+import os
+from pathlib import Path
+
+# Get the parent directory (project root)
+env_path = Path(__file__).parent.parent / '.env'
+load_dotenv(dotenv_path=env_path)
 
 # Create FastAPI app
 app = FastAPI(

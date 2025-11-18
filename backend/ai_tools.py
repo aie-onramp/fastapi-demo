@@ -266,7 +266,7 @@ def chat_with_claude(message: str, conversation_history: Optional[List[Dict[str,
     try:
         # Step 1: Send message to Claude with tools
         response = client.messages.create(
-            model="claude-3-5-sonnet-20241022",
+            model="claude-haiku-4-5-20251001",  # Claude 3.5 Sonnet (latest)
             max_tokens=1024,
             tools=TOOLS,
             messages=messages
@@ -309,7 +309,7 @@ def chat_with_claude(message: str, conversation_history: Optional[List[Dict[str,
             ]
 
             response = client.messages.create(
-                model="claude-3-5-sonnet-20241022",
+                model="claude-haiku-4-5-20251001",
                 max_tokens=1024,
                 tools=TOOLS,
                 messages=messages
