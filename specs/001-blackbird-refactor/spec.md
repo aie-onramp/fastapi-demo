@@ -3,7 +3,10 @@
 **Feature Branch**: `001-blackbird-refactor`
 **Created**: 2025-11-17
 **Status**: Draft
+**Context**: **Educational Prototype** for AI Engineering Onramp course
 **Input**: User description: "Refactor Blackbird customer support application from HuggingFace Gradio/FastAPI to SQLite database with React frontend"
+
+> **Note**: This is a simplified educational prototype focused on teaching AI integration concepts, not a production-grade application. Many production features have been intentionally removed to reduce cognitive overhead for students learning AI-assisted development.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -59,23 +62,6 @@ Support agents need to view order details, track order status, and manage order 
 
 ---
 
-### User Story 4 - Conversation History and Audit Trail (Priority: P3)
-
-Support agents and managers need to review past chat conversations for quality assurance, training, and compliance purposes.
-
-**Why this priority**: Important for operational excellence but not required for basic functionality. Can be added after core features are working.
-
-**Independent Test**: Can be tested by reviewing stored chat sessions, searching conversation history, and exporting chat logs. Provides value for auditing and quality improvement.
-
-**Acceptance Scenarios**:
-
-1. **Given** multiple chat sessions have occurred, **When** an agent or manager accesses conversation history, **Then** past chats are displayed with timestamps and participants
-2. **Given** a specific timeframe is selected, **When** searching conversations, **Then** only chats within that period are shown
-3. **Given** a conversation is selected, **When** viewing details, **Then** the complete message exchange is displayed with AI tool calls and results
-4. **Given** a need for reporting, **When** exporting conversation data, **Then** the system provides downloadable chat logs in a standard format
-
----
-
 ### Edge Cases
 
 - What happens when the database connection fails during a chat session?
@@ -98,53 +84,46 @@ Support agents and managers need to review past chat conversations for quality a
 - **FR-005**: System MUST integrate with Claude AI API for conversational customer support using function calling
 - **FR-006**: System MUST support the following AI tools: get_user, get_order_by_id, get_customer_orders, cancel_order, update_user_contact, get_user_info
 - **FR-007**: System MUST prevent cancellation of orders with status other than "Processing"
-- **FR-008**: System MUST persist all customer and order data changes to SQLite database immediately
+- **FR-008**: System MUST persist all customer and order data changes to SQLite database
 - **FR-009**: React frontend MUST provide a chat interface for AI-powered customer support conversations
-- **FR-010**: React frontend MUST display customer data in a searchable, sortable, paginated table view
-- **FR-011**: React frontend MUST display order data in a searchable, sortable, paginated table view with status filtering
-- **FR-012**: React frontend MUST handle API errors gracefully with user-friendly error messages
-- **FR-013**: System MUST validate all user inputs (email format, phone format, required fields) before processing
-- **FR-014**: System MUST maintain conversation context across multiple AI interactions within a session
-- **FR-015**: System MUST log all API requests and AI tool invocations for debugging and auditing
-- **FR-016**: React frontend MUST support real-time chat updates without page refreshes
-- **FR-017**: System MUST handle concurrent database access safely with appropriate locking mechanisms
-- **FR-018**: System MUST provide database migration scripts for initial setup and future schema changes
-- **FR-019**: System MUST store chat conversation history in the database linked to customer interactions
-- **FR-020**: React frontend MUST provide responsive design supporting desktop and tablet viewports
+- **FR-010**: React frontend MUST display customer data in a searchable table view
+- **FR-011**: React frontend MUST display order data in a table view with status filtering
+- **FR-012**: React frontend MUST handle API errors with user-friendly error messages
+- **FR-013**: System MUST validate all user inputs (email format, phone format, required fields) via Pydantic models
+- **FR-014**: System MUST maintain conversation context within a single chat session (stateless - no persistence)
+- **FR-015**: System MUST provide database migration scripts for initial setup
 
 ### Non-Functional Requirements
 
-- **NFR-001**: System MUST respond to customer lookup queries within 2 seconds under normal load
-- **NFR-002**: AI chat responses MUST be displayed within 5 seconds of user message submission
-- **NFR-003**: Database operations MUST support at least 50 concurrent connections
-- **NFR-004**: System MUST maintain 99% uptime during business hours
-- **NFR-005**: All sensitive customer data MUST be handled securely (parameterized queries to prevent SQL injection)
-- **NFR-006**: System MUST gracefully degrade when AI API is unavailable (display appropriate error, maintain data access)
+> **Note**: For educational prototype - these are guidelines, not hard requirements with automated testing
+
+- **NFR-001**: All sensitive customer data MUST be handled securely (parameterized queries via SQLite to prevent SQL injection)
+- **NFR-002**: System SHOULD handle Claude API errors gracefully (display friendly error message when API unavailable)
 
 ### Key Entities *(include if feature involves data)*
 
-- **Customer**: Represents an end-user customer with account information. Key attributes include unique identifier, email address, phone number, username, and creation timestamp. Related to Orders (one-to-many).
+- **Customer**: Represents an end-user customer with account information. Key attributes include unique identifier, email address, phone number, and username. Related to Orders (one-to-many).
 
-- **Order**: Represents a purchase transaction. Key attributes include unique order identifier, associated customer reference, order items/products, order status (Processing, Shipped, Delivered, Cancelled), order date, total amount, and shipping information. Related to Customer (many-to-one).
+- **Order**: Represents a product purchase transaction. Key attributes include unique order identifier, associated customer reference, product name, quantity, price, and order status (Processing, Shipped, Delivered, Cancelled). Related to Customer (many-to-one).
 
-- **Conversation**: Represents a chat session between support agent and AI. Key attributes include unique conversation identifier, timestamp, participant identifier, message history, tool calls made, and optional associated customer reference for linking support interactions to accounts.
-
-- **Message**: Represents individual messages within a conversation. Key attributes include message ID, conversation reference, sender role (user/assistant/system), message content, timestamp, and optional tool use metadata.
+> **Note**: Chat conversations are **stateless** (not persisted to database). This matches the original Gradio app behavior and simplifies the architecture for educational purposes.
 
 ## Success Criteria *(mandatory)*
 
 ### Measurable Outcomes
 
-- **SC-001**: Support agents can complete customer account lookups in under 10 seconds from initial query to data display
-- **SC-002**: Order cancellations can be processed in under 15 seconds from request to confirmation
-- **SC-003**: System successfully handles 50 concurrent chat sessions without performance degradation
-- **SC-004**: 95% of customer queries are resolved within the chat interface without needing direct database access
-- **SC-005**: Data migration from HuggingFace datasets to SQLite completes with 100% data integrity (zero records lost or corrupted)
-- **SC-006**: Customer and order search operations return results in under 1 second for databases containing up to 10,000 records
-- **SC-007**: React frontend loads and displays initial chat interface within 2 seconds on standard broadband connections
-- **SC-008**: All CRUD operations on customers and orders complete successfully with proper error handling and validation
-- **SC-009**: AI conversation context is maintained correctly across at least 10 message exchanges within a session
-- **SC-010**: System recovers gracefully from AI API failures with user-friendly error messages appearing within 3 seconds
+> **Note**: For educational prototype - success is measured by learning objectives, not performance metrics
+
+- **SC-001**: Students can successfully send chat messages to Claude AI and receive intelligent responses
+- **SC-002**: Claude AI correctly invokes the appropriate tool (1 of 6) based on user queries
+- **SC-003**: AI tools execute successfully and return accurate customer/order data from SQLite database
+- **SC-004**: Customer management UI displays data in a table with functional search
+- **SC-005**: Order management UI displays data in a table with status filtering
+- **SC-006**: Order cancellation works correctly (allows Processing orders, rejects Shipped orders)
+- **SC-007**: Data migration from HuggingFace datasets to SQLite completes with 100% data integrity (10 customers, 13 orders)
+- **SC-008**: All API endpoints return proper HTTP status codes and error messages
+- **SC-009**: Students understand the Claude AI function calling workflow (tool schema → invocation → execution → response)
+- **SC-010**: Application demonstrates end-to-end integration: React → FastAPI → SQLite → Claude AI
 
 ## Assumptions
 
@@ -161,6 +140,20 @@ Support agents and managers need to review past chat conversations for quality a
 
 ## Out of Scope
 
+### Production Features (Intentionally Removed for Educational Simplicity)
+
+- **Conversation history persistence** - Chat is stateless like original Gradio app
+- **Comprehensive logging/monitoring** - Basic error handling only
+- **Performance optimization** - No WAL mode, connection pooling, or caching
+- **Advanced testing** - Manual UI testing, basic API tests only (no E2E/integration/unit tests)
+- **Pagination/sorting** - Simple table display sufficient for 10-13 test records
+- **Responsive design** - Desktop-only is acceptable for learning environment
+- **Real-time updates** - Simple request/response pattern
+- **Concurrency handling** - Single-user development environment
+- **SLA/uptime requirements** - Educational prototype, not production system
+
+### Future Enhancements (Could Be Added Later)
+
 - Multi-tenant architecture or support for multiple organizations
 - Integration with external payment gateways or shipping providers
 - Mobile native applications (iOS/Android)
@@ -170,4 +163,4 @@ Support agents and managers need to review past chat conversations for quality a
 - Customer-facing self-service portal (this is for support agents only)
 - Integration with CRM systems (Salesforce, HubSpot, etc.)
 - Advanced AI features beyond current function calling capabilities (RAG, fine-tuning, etc.)
-- User authentication and role-based access control (to be addressed in future phase)
+- User authentication and role-based access control
