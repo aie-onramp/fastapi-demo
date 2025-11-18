@@ -18,7 +18,7 @@ export default function ChatPage() {
                '• View customer orders\n' +
                '• Cancel orders (if they\'re still processing)\n' +
                '• Update customer contact information\n\n' +
-               'Try asking: "Look up customer with email john@example.com"',
+               'Try one of the example queries below, or ask me anything about our customers and orders!',
       toolCalls: []
     }
   ]);
@@ -122,19 +122,25 @@ export default function ChatPage() {
         </div>
 
         <div className="example-queries">
-          <h3>Example queries:</h3>
+          <h3>Example queries (click to try):</h3>
           <ul>
-            <li onClick={() => setInput('Look up customer with email john@example.com')}>
-              Look up customer with email john@example.com
+            <li onClick={() => setInput('Can you confirm my username? My email is meilin@gmail.com.')}>
+              Can you confirm my username? My email is meilin@gmail.com.
             </li>
-            <li onClick={() => setInput('Show me their orders')}>
-              Show me their orders
+            <li onClick={() => setInput('Can you send me a list of my recent orders? My phone number is 222-333-4444.')}>
+              Can you send me a list of my recent orders? My phone number is 222-333-4444.
             </li>
-            <li onClick={() => setInput('Cancel order 47652')}>
-              Cancel order 47652
+            <li onClick={() => setInput('I need to confirm my current user info and order status. My username is liamn.')}>
+              I need to confirm my current user info and order status. My username is liamn.
             </li>
-            <li onClick={() => setInput('Update customer 1213210 email to newemail@example.com')}>
-              Update customer email address
+            <li onClick={() => setInput("I'm checking on the status of an order, the order id is 74651.")}>
+              I'm checking on the status of an order, the order id is 74651.
+            </li>
+            <li onClick={() => setInput('I need to cancel Order ID 97531.')}>
+              I need to cancel Order ID 97531.
+            </li>
+            <li onClick={() => setInput('I lost my phone and need to update my contact information. My user id is 1213210.')}>
+              I lost my phone and need to update my contact info. My user id is 1213210.
             </li>
           </ul>
         </div>
