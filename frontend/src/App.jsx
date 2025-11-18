@@ -1,13 +1,17 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import ChatPage from './pages/ChatPage';
+import CustomersPage from './pages/CustomersPage';
+import OrdersPage from './pages/OrdersPage';
 import './App.css';
 
 /**
  * Main App component with routing.
  *
- * For MVP, only the Chat page is implemented.
- * Customer and Order pages will be added in Phase 4 and 5.
+ * Includes all three main pages:
+ * - Chat: AI-powered customer support interface
+ * - Customers: Customer data management
+ * - Orders: Order management and tracking
  */
 function App() {
   return (
@@ -18,17 +22,19 @@ function App() {
             <li>
               <Link to="/">AI Chat</Link>
             </li>
-            <li className="coming-soon">
-              <span>Customers (Coming Soon)</span>
+            <li>
+              <Link to="/customers">Customers</Link>
             </li>
-            <li className="coming-soon">
-              <span>Orders (Coming Soon)</span>
+            <li>
+              <Link to="/orders">Orders</Link>
             </li>
           </ul>
         </nav>
 
         <Routes>
           <Route path="/" element={<ChatPage />} />
+          <Route path="/customers" element={<CustomersPage />} />
+          <Route path="/orders" element={<OrdersPage />} />
         </Routes>
       </div>
     </Router>

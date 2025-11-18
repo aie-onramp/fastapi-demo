@@ -37,10 +37,3 @@ nav a:hover {
 nav a.active {
   background-color: #007bff;
 }
-
-nav .coming-soon span {
-  color: #999;
-  font-weight: 500;
-  padding: 0.5rem 1rem;
-  cursor: not-allowed;
-}
