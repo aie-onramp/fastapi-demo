@@ -1,5 +1,5 @@
 """
-Claude AI Integration with Function Calling.
+Claude AI Integration with Function Calling (November 2025 SDK Patterns).
 
 Implements 6 tools for customer support operations:
 1. get_user - Search customer by email/phone/username
@@ -10,6 +10,14 @@ Implements 6 tools for customer support operations:
 6. get_user_info - Get customer + orders combined
 
 Educational focus: Teaching Claude AI function calling integration.
+
+SDK Implementation Notes (2025):
+- Uses Anthropic SDK v0.73.0+ with Messages API
+- Tool definitions use "input_schema" (not "parameters")
+- Tool results support simple string content (wrapping optional)
+- Supports parallel tool execution (via tool_choice.disable_parallel_tool_use)
+- Error handling via "is_error" flag in tool results
+- Multi-turn conversation with proper message history management
 """
 
 import os
@@ -223,12 +231,12 @@ def execute_tool(tool_name: str, tool_input: Dict[str, Any]) -> Dict[str, Any]:
 
 def chat_with_claude(message: str, conversation_history: Optional[List[Dict[str, Any]]] = None) -> Dict[str, Any]:
     """
-    Send a message to Claude with tool calling enabled.
+    Send a message to Claude with tool calling enabled (2025 SDK Pattern).
 
     This implements the multi-turn conversation flow:
     1. Send user message with available tools
-    2. If Claude wants to use tools, execute them
-    3. Send tool results back to Claude
+    2. If Claude wants to use tools (stop_reason == "tool_use"), execute them
+    3. Send tool results back to Claude in proper message format
     4. Return Claude's final response
 
     Args:
@@ -240,7 +248,12 @@ def chat_with_claude(message: str, conversation_history: Optional[List[Dict[str,
             - response: Claude's text response
             - tool_calls: List of tools used (for transparency/debugging)
 
-    Educational note: This demonstrates the full Claude function calling workflow.
+    Educational note: This demonstrates the full Claude function calling workflow
+    using November 2025 SDK patterns:
+    - Proper conversation history with assistant/user role alternation
+    - Tool result blocks with optional "is_error" flag
+    - Support for parallel tool execution
+    - Simple string content format (no wrapping required)
     """
     # Initialize Anthropic client
     api_key = os.getenv("ANTHROPIC_API_KEY")
@@ -265,11 +278,20 @@ def chat_with_claude(message: str, conversation_history: Optional[List[Dict[str,
 
     try:
         # Step 1: Send message to Claude with tools
+        # Note: Claude 2025 supports parallel tool execution by default
         response = client.messages.create(
             model="claude-haiku-4-5-20251001",  # Claude 4.5 Haiku (latest)
             max_tokens=1024,
             tools=TOOLS,
-            messages=messages
+            messages=messages,
+            tool_choice={
+                "type": "auto",  # Claude decides which tools to use
+                "disable_parallel_tool_use": False,  # False = parallel enabled (default)
+            },
+            # Other tool_choice options:
+            # {"type": "any"}  # Force Claude to use at least one tool
+            # {"type": "tool", "name": "get_user"}  # Force specific tool
+            # {"type": "none"}  # Prevent tool use
         )
 
         # Step 2: Check if Claude wants to use tools
@@ -292,15 +314,24 @@ def chat_with_claude(message: str, conversation_history: Optional[List[Dict[str,
                 # Execute the tool
                 try:
                     result = execute_tool(tool_name, tool_input)
+                    is_error = False
                 except Exception as e:
                     result = {"error": str(e)}
+                    is_error = True
 
-                # Format tool result for Claude
-                tool_results.append({
+                # Format tool result for Claude (2025 SDK pattern)
+                # Note: Simple string content is valid; wrapping in [{"type": "text"}] is optional
+                tool_result = {
                     "type": "tool_result",
                     "tool_use_id": tool_use.id,
                     "content": json.dumps(result)
-                })
+                }
+
+                # Add error flag if tool execution failed (2025 SDK enhancement)
+                if is_error or (isinstance(result, dict) and "error" in result):
+                    tool_result["is_error"] = True
+
+                tool_results.append(tool_result)
 
             # Step 3: Send tool results back to Claude
             messages = messages + [
@@ -312,7 +343,11 @@ def chat_with_claude(message: str, conversation_history: Optional[List[Dict[str,
                 model="claude-haiku-4-5-20251001",  # Claude 4.5 Haiku
                 max_tokens=1024,
                 tools=TOOLS,
-                messages=messages
+                messages=messages,
+                tool_choice={
+                    "type": "auto",
+                    "disable_parallel_tool_use": False,
+                },
             )
 
         # Step 4: Extract final text response
